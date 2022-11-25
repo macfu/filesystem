@@ -12,6 +12,7 @@
         <module>dfs-rpc</module>
         <module>dfs-client</module>
         <module>dfs-namenode</module>
+        <module>dfs-datanode</module>
     </modules>
 
     <properties>
