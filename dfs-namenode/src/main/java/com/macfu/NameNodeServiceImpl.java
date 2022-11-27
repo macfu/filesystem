@@ -280,14 +280,61 @@ public class NameNodeServiceImpl implements NameNodeServiceGrpc.NameNodeService 
         responseObserver.onCompleted();
     }
 
+    /**
+     * 数据节点通知自己接受到了文件副本
+     * @param request
+     * @param responseObserver
+     */
     @Override
     public void informReplicaReceived(InformReplicaReceivedRequest request, StreamObserver<InformReplicaReceivedResponse> responseObserver) {
+        String hostname = request.getHostname();
+        String ip = request.getIp();
+        String filename = request.getFilename();
 
+        InformReplicaReceivedResponse response = null;
+        try {
+            namesystem.addReceivedReplica(hostname, ip, filename.split("_")[0], Long.valueOf(filename.split("_")[1]));
+
+            response = InformReplicaReceivedResponse.newBuilder()
+                    .setStatus(STATUS_SUCCESS)
+                    .build();
+        } catch (Exception e) {
+            e.printStackTrace();
+            response = InformReplicaReceivedResponse.newBuilder()
+                    .setStatus(STATUS_FAILURE)
+                    .build();
+        }
+
+        responseObserver.onNext(response);
+        responseObserver.onCompleted();
     }
 
+    /**
+     * 上报全量存储信息
+     * @param request
+     * @param responseObserver
+     */
     @Override
     public void reportCompleteStorageInfo(ReportCompleteStorageInfoRequest request, StreamObserver<ReportCompleteStorageInfoResponse> responseObserver) {
+        String ip = request.getIp();
+        String hostname = request.getHostname();
+        String filenamesJson = request.getFilenames();
+        Long storedDataSize = request.getStoredDataSize();
 
+        dataNodeManager.setStoredDataSize(ip, hostname, storedDataSize);
+
+        JSONArray filenames = JSONArray.parseArray(filenamesJson);
+        for (int i = 0; i < filenames.size(); i++) {
+            String filename = filenames.getString(i);
+            namesystem.addReceivedReplica(hostname, ip, filename.split("_")[0], Long.valueOf(filename.split("_")[1]));
+        }
+
+        ReportCompleteStorageInfoResponse response = ReportCompleteStorageInfoResponse.newBuilder()
+                .setStatus(STATUS_SUCCESS)
+                .build();
+
+        responseObserver.onNext(response);
+        responseObserver.onCompleted();
     }
 
     @Override
