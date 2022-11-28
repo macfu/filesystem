@@ -2,6 +2,7 @@ package com.macfu.server.nio;
 
 import com.google.common.collect.Lists;
 import com.macfu.server.NameNodeRpcClient;
+import com.macfu.server.NetWorkResponseQueues;
 import com.macfu.server.util.DataNodeConfig;
 import lombok.extern.slf4j.Slf4j;
 
@@ -13,6 +14,7 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
 
 /**
  * 数据节点的NIOServer
@@ -28,14 +30,14 @@ public class NioServer extends Thread {
     // 负责解析请求和发送响应的processor线程
     private List<NioProcessor> processorList = Lists.newArrayList();
     // 与NameNode进行通信的客户端
-    private NameNodeRpcClient nameNodeRpcClient;
+    private NameNodeRpcClient namenode;
 
     /**
      * NIOServer的初始化，监听端口，队列初始化，线程初始化
      * @param nameNodeRpcClient
      */
     public NioServer(NameNodeRpcClient nameNodeRpcClient) {
-        this.nameNodeRpcClient = nameNodeRpcClient;
+        this.namenode = nameNodeRpcClient;
     }
 
     public void init() {
@@ -54,6 +56,21 @@ public class NioServer extends Thread {
             serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
             log.info("NIOServer已经启动，开始监听端口：" + DataNodeConfig.NIO_PORT);
 
+            // 启动固定数量的Processor线程
+            NetWorkResponseQueues responseQueues = NetWorkResponseQueues.get();
+
+            for (int i = 0; i < PROCESSOR_THREAD_NUM; i++) {
+                NioProcessor processor = new NioProcessor(i);
+                processorList.add(processor);
+                processor.start();
+
+                responseQueues.initResponseQueue(i);
+            }
+
+            //启动固定数量的Processor线程
+            for (int i = 0; i < IO_THREAD_NUM; i++) {
+                new IOThread(nameNode).start();
+            }
 
 
         } catch (IOException e) {
@@ -83,6 +100,14 @@ public class NioServer extends Thread {
                         SocketChannel accept = channel.accept();
                         if (accept != null) {
                             channel.configureBlocking(false);
+
+                            /**
+                             * 如果一旦跟某个客户端建立了连接之后，就需要将这个客户端均匀分给后续的process线程
+                             */
+                            Integer processorIndex = new Random().nextInt(PROCESSOR_THREAD_NUM);
+                            NioProcessor processor = processorList.get(processorIndex);
+                            processor.addChannel(accept);
+
                         }
                     }
                 }
