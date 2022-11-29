@@ -5,15 +5,15 @@ import com.google.common.collect.Maps;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class NetWorkResponseQueues {
+public class NetWorkResponseQueue {
 
-    public static volatile NetWorkResponseQueues instance = null;
+    public static volatile NetWorkResponseQueue instance = null;
 
-    public static NetWorkResponseQueues get() {
+    public static NetWorkResponseQueue get() {
         if (instance == null) {
-            synchronized (NetWorkResponseQueues.class) {
+            synchronized (NetWorkResponseQueue.class) {
                 if (instance == null) {
-                    instance = new NetWorkResponseQueues();
+                    instance = new NetWorkResponseQueue();
                 }
             }
         }

@@ -307,6 +307,11 @@ public class NetWorkRequest {
         cachedRequest.hasCompleteRead = true;
     }
 
+    public Boolean hasCompletedRead() {
+        return cachedRequest.hasCompleteRead;
+    }
+
+
     /**
      * 文件名
      */
@@ -335,53 +340,28 @@ public class NetWorkRequest {
         Long fileLength;
         ByteBuffer file;
         Boolean hasCompleteRead = false;
-
-        public Integer getRequestType() {
-            return requestType;
-        }
-
-        public void setRequestType(Integer requestType) {
-            this.requestType = requestType;
-        }
-
-        public Filename getFilename() {
-            return filename;
-        }
-
-        public void setFilename(Filename filename) {
-            this.filename = filename;
-        }
-
-        public Integer getFilenameLength() {
-            return filenameLength;
-        }
-
-        public void setFilenameLength(Integer filenameLength) {
-            this.filenameLength = filenameLength;
-        }
-
-        public Long getFileLength() {
-            return fileLength;
-        }
-
-        public void setFileLength(Long fileLength) {
-            this.fileLength = fileLength;
-        }
-
-        public ByteBuffer getFile() {
-            return file;
-        }
-
-        public void setFile(ByteBuffer file) {
-            this.file = file;
-        }
-
-        public Boolean getHasCompleteRead() {
-            return hasCompleteRead;
-        }
-
-        public void setHasCompleteRead(Boolean hasCompleteRead) {
-            this.hasCompleteRead = hasCompleteRead;
-        }
     }
+
+    public Integer getRequestType() {
+        return cachedRequest.requestType;
+    }
+    public String getAbsoluteFilename() {
+        return cachedRequest.filename.absoluteFilename;
+    }
+    public String getRelativeFilename() {
+        return cachedRequest.filename.relativeFilename;
+    }
+    public ByteBuffer getFile() {
+        return cachedRequest.file;
+    }
+    public Long getFileLength() {
+        return cachedRequest.fileLength;
+    }
+    public Integer getProcessorId() {
+        return processorId;
+    }
+    public void setProcessorId(Integer processorId) {
+        this.processorId = processorId;
+    }
+
 }
