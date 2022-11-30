@@ -1,8 +1,9 @@
 package com.macfu.server.nio;
 
 import com.google.common.collect.Lists;
+import com.macfu.server.IOThread;
 import com.macfu.server.NameNodeRpcClient;
-import com.macfu.server.NetWorkResponseQueues;
+import com.macfu.server.NetWorkResponseQueue;
 import com.macfu.server.util.DataNodeConfig;
 import lombok.extern.slf4j.Slf4j;
 
@@ -57,7 +58,7 @@ public class NioServer extends Thread {
             log.info("NIOServer已经启动，开始监听端口：" + DataNodeConfig.NIO_PORT);
 
             // 启动固定数量的Processor线程
-            NetWorkResponseQueues responseQueues = NetWorkResponseQueues.get();
+            NetWorkResponseQueue responseQueues = NetWorkResponseQueue.get();
 
             for (int i = 0; i < PROCESSOR_THREAD_NUM; i++) {
                 NioProcessor processor = new NioProcessor(i);
@@ -69,7 +70,7 @@ public class NioServer extends Thread {
 
             //启动固定数量的Processor线程
             for (int i = 0; i < IO_THREAD_NUM; i++) {
-                new IOThread(nameNode).start();
+                new IOThread(namenode).start();
             }
 
 
@@ -117,4 +118,6 @@ public class NioServer extends Thread {
             }
         }
     }
+
+     
 }
